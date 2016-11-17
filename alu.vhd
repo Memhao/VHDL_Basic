@@ -1,3 +1,4 @@
+use work.sumpack.all;
 ENTITY alu IS
 	GENERIC(delay : TIME:=50ns; N: INTEGER:=8; OP: INTEGER:=2);
 	PORT(
@@ -7,6 +8,7 @@ ENTITY alu IS
 		CLOCK     : IN BIT:= '1';
 		reset : IN BIT;
 		OUTPUT : OUT BIT_VECTOR(N-1 DOWNTO 0);
+		CARRYIN : IN BIT;
 		CARRYOUT : OUT BIT
 	);
 END alu;
@@ -25,9 +27,10 @@ PROCESS(clock,sel_op)
 			temp_a:= OPERAND_A;
 			temp_b:= OPERAND_B;
 		ELSIF sel_op(0) ='0' AND sel_op(1)='1' THEN
-			temp_res := temp_a xor temp_b ;
+			--then add
+			temp_res:=suma(temp_a,temp_b,CARRYIN);
 		ELSIF sel_op(0) ='1' AND sel_op(1)='0' THEN
-			temp_res := temp_a xor not temp_b ;
+			temp_res:=suma(temp_a,not temp_b,CARRYIN);
 		END IF;
 	END IF;
 	OUTPUT<= temp_res(N-1 DOWNTO 0);
