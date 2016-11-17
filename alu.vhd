@@ -19,7 +19,7 @@ BEGIN
 PROCESS(clock,sel_op)
 	VARIABLE temp_a : BIT_VECTOR(N-1 DOWNTO 0);
 	VARIABLE temp_b : BIT_VECTOR(N-1 DOWNTO 0);
-	VARIABLE temp_res: BIT_VECTOR(N DOWNTO 0);
+	VARIABLE temp_res: BIT_VECTOR(N-1 DOWNTO 0);
 	VARIABLE ovr : BIT;
 	BEGIN
 	IF clock = '1' AND clock'EVENT THEN
@@ -34,6 +34,5 @@ PROCESS(clock,sel_op)
 		END IF;
 	END IF;
 	OUTPUT<= temp_res(N-1 DOWNTO 0);
-	CARRYOUT <= temp_res(N);
 	END PROCESS;
 END behave_alu;
