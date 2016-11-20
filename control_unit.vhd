@@ -24,7 +24,7 @@ SIGNAL current_state, next_state : states:=init;
 	SIGNAL  f_s : BIT; --witch together with q(0) gives us next state
 	CONSTANT ct_am : BIT_VECTOR(3 DOWNTO 0):="0000";
 	CONSTANT ct_q : BIT_VECTOR(3 DOWNTO 0):="0011";
-	CONSTANT ct_y : BIT_VECTOR(3 DOWNTO 0):="0101";
+	CONSTANT ct_y : BIT_VECTOR(3 DOWNTO 0):="0111";
 BEGIN
 clock_process:PROCESS(clock)
 BEGIN
@@ -51,41 +51,20 @@ BEGIN
 			count:=0;
 			c<="0000001";
 			next_state<=scan;
-			--------------------------
-			--f_s<='0';
-			
 
-			--IF q(1)='1' AND q(0)='0'  THEN
-			-- 	next_state<= sub;
-			--END IF;
 		WHEN sub => -- substract
 			IF count=N THEN
 				next_state<=endstate;
 			ELSE 
-			--------------------------------------------------------
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,NOT ct_y,'1');--sub from A value of c2's y
 			va<=a sra 1 after 100ns;
 			aux_a_m(7 downto 4):=a; -- reconstruct content of A_M
 			aux_a_m(3 downto 0):=a_m(3 downto 0);
 			
-			--amshift := amshift sra 1 ; -- right shift arithm
-			--------------------------------------------------------
-
-				-- right shift arithm
-			--amshift := aux_a_m sra 1 ; 
-			--a_m <= amshift after 100ns;
 			a_m <=aux_a_m after 100ns; 	
-			--------------------------------------------------------
-			--f:=q(1);
-			--aux_q:= q(4 downto 1) ror 1; 
-			--q(4 downto 1)<=aux_q after 100ns;
-			--q(0)<=f after 100ns;
-			--------------------------------------------------------
 			c<="0101010";
-			--IF q(1)='1' AND q(0)='0'   THEN
-			--	next_state<= add;
-			--END IF;
+
 			next_state<=test;
 			END IF;
 		WHEN add =>  --addition
@@ -98,9 +77,6 @@ BEGIN
 			aux_a_m(7 downto 4):=a; -- reconstruct content of A_M
 			aux_a_m(3 downto 0):=a_m(3 downto 0);
 			
-			--amshift := amshift sra 1 ; -- right shift arithm
-			--amshift := aux_a_m sra 1 ; 
-			--a_m <= amshift after 100ns;
 			a_m <=aux_a_m after 100ns; 
 			c<="1111111";
 			next_state<=test;
