@@ -15,7 +15,7 @@ ENTITY control_unit IS
 END control_unit;
 
 ARCHITECTURE behave OF control_unit IS
-TYPE states IS (s0, s1, s2, s3);
+TYPE states IS (s0, s1, s2, s3); -- s0 -> init ; s1 -> sub ; s2->add ; s3->rshiftarithm
 SIGNAL current_state, next_state : states:=s0;
 
 	SIGNAL  f_s : BIT; --witch together with q(0) gives us next state
@@ -31,6 +31,7 @@ BEGIN
 END PROCESS clock_process;
 state_transition_process:PROCESS(current_state,q)
 	VARIABLE count :INTEGER:=0;
+	VARIABLE f:BIT;
 	VARIABLE a,aux_a,aux_q:BIT_VECTOR(3 DOWNTO 0);
 	VARIABLE amshift:BIT_VECTOR(7 DOWNTO 0);
 BEGIN
@@ -41,7 +42,7 @@ BEGIN
 			a_m(7 downto 4)<=ct_am; -- initialize A register with 0000
 			a_m(3 downto 0)<=ct_am; -- initialize M register with 0000
 			--a_m<="00000001";
-			q(4 downto 1)<=ct_y;
+			q(4 downto 1)<=ct_q;
 			q(0)<='0';
 
 			f_s<='0';
@@ -60,14 +61,15 @@ BEGIN
 
 			a_m <=amshift after 100ns; 	
 			--------------------------------------------------------
-			--q(0)<=q(1);
-			--aux_q:= q(4 downto 1) srl 1; 
-			--q(4 downto 1)<=aux_q;
+			f:=q(1);
+			aux_q:= q(4 downto 1) ror 1; 
+			q(4 downto 1)<=aux_q after 100ns;
+			q(0)<=f after 100ns;
 			--------------------------------------------------------
 			c<="0001001";
-			--IF q(1)='1' AND q(0)='1' THEN
+			IF q(1)='1' AND q(0)='0' THEN
 				next_state<= s2;
-			--END IF;
+			END IF;
 		WHEN s2 =>
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,ct_y,'0');--add from A value of c2's y
@@ -76,7 +78,7 @@ BEGIN
 			amshift(3 downto 0):=a_m(3 downto 0);
 			amshift := amshift sra 1 ; -- right shift arithm
 
-			a_m <=amshift after 200ns; 
+			a_m <=amshift after 100ns; 
 			--c<="11001100";
 			IF q(1)='0' AND q(0)='1' THEN
 				next_state<= s1;
