@@ -59,6 +59,9 @@ BEGIN
 			-- 	next_state<= sub;
 			--END IF;
 		WHEN sub => -- substract
+			IF count=N THEN
+				next_state<=endstate;
+			ELSE 
 			--------------------------------------------------------
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,NOT ct_y,'1');--sub from A value of c2's y
@@ -84,7 +87,11 @@ BEGIN
 			--	next_state<= add;
 			--END IF;
 			next_state<=test;
+			END IF;
 		WHEN add =>  --addition
+			IF count=N THEN
+				next_state<=endstate;
+			ELSE 
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,ct_y,'0');--add from A value of c2's y
 			va<=a after 100ns;
@@ -97,6 +104,7 @@ BEGIN
 			a_m <=aux_a_m after 100ns; 
 			c<="1111111";
 			next_state<=test;
+			END IF;
 		WHEN scan => -- decide next state
 			IF q(1)='0' AND q(0)='1' THEN
 				next_state<=add;
@@ -106,17 +114,17 @@ BEGIN
 				next_state<=test;
 			END IF;
 		WHEN test =>
-			IF count=4 THEN
+			IF count=N THEN
 				next_state<=endstate;
 			ELSE
 
 				amshift := a_m sra 1 ; 
-				a_m <= amshift after 100ns;
+				a_m <= amshift after 100ns ;
 				 -- right shift rotation for q
 				f:=q(1);
 				aux_q:= q(4 downto 1) ror 1; 
-				q(4 downto 1)<=aux_q after 100ns;
-				q(0)<=f after 100ns;
+				q(4 downto 1)<=aux_q after 110ns;
+				q(0)<=f after 110ns;
 
 				-- increment counter
 				count:= count+1;
