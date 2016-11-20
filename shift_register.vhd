@@ -18,7 +18,7 @@ BEGIN
 	VARIABLE sout : BIT;
 	BEGIN
 	IF reset = '0' THEN
-		temp:=x"00";
+		temp:=(0 => '0', others => '0');
 	ELSIF clock = '1' AND clock'EVENT THEN
 		IF load ='1' THEN
 			temp:= paralel_in;
