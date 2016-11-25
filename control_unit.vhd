@@ -3,17 +3,26 @@ ENTITY control_unit IS
 	GENERIC(delay : TIME:=50ns; N: INTEGER:=4); -- sincornizare pe front scazator -- r q a au clock  -aici se stabileste algoritmul
 	PORT(
 		clock : IN BIT;
-		begins : IN BIT;
-		c : OUT BIT_VECTOR(6 DOWNTO 0);
+		begins : IN BIT; --il dau de mana dupa reset
+		reset : IN BIT; -- sa tin registrele pe 000 activ pe 1
+		ctrl : OUT BIT_VECTOR(5 DOWNTO 0);--semnale de control
+		sel  : IN BIT_VECTOR(1 DOWNTO 0);
 		--test out 
-		va : INOUT BIT_VECTOR(3 DOWNTO 0);
+		--va : INOUT BIT_VECTOR(3 DOWNTO 0);
 
-
-			
+		-- c0 incarca de pe magistrala A si M( la mine e Q :) )
+		-- pe c1 incarc M
+		-- pe c2 activez loadul de la registrul A
+		-- pe c3 selectez intre adunare si scadere
+		-- pe c4 activez  semnalul de shiftare a registrelor
+		-- pune intarzieri la semnalele de control
+		-- generatorul de tact sa fie 100ns
+		-- registrele sa aiba reset load 
+		-- ###############################################################
 		count:INOUT INTEGER;
 		a_m:INOUT BIT_VECTOR(7 DOWNTO 0);
 		q: INOUT BIT_VECTOR(4 DOWNTO 0) --5 bits 1 of them for op
-
+		-- ###############################################################
 	);
 END control_unit;
 
@@ -23,12 +32,14 @@ SIGNAL current_state, next_state : states:=init;
 
 	SIGNAL  f_s : BIT; --witch together with q(0) gives us next state
 	CONSTANT ct_am : BIT_VECTOR(3 DOWNTO 0):="0000";
-	CONSTANT ct_q : BIT_VECTOR(3 DOWNTO 0):="0011";
+	CONSTANT ct_q : BIT_VECTOR(3 DOWNTO 0):="0111";
 	CONSTANT ct_y : BIT_VECTOR(3 DOWNTO 0):="0111";
 BEGIN
-clock_process:PROCESS(clock)
+clock_process:PROCESS(clock,reset)
 BEGIN
-	IF clock='0' AND clock'EVENT THEN
+	IF reset = '0' THEN
+		current_state <=init;
+	ELSIF clock='0' AND clock'EVENT THEN
 		current_state <= next_state;
 	END IF;
 END PROCESS clock_process;
@@ -40,6 +51,7 @@ state_transition_process:PROCESS(current_state,q)
 BEGIN
 	CASE 	current_state IS 
 		WHEN init => 
+		-- ###############################################################
 			a:=ct_am;
 			-- load A and M register with 0
 			a_m(7 downto 4)<=ct_am; -- initialize A register with 0000
@@ -47,9 +59,11 @@ BEGIN
 			-- load Q register with multiplier and init q(0) with 0 
 			q(4 downto 1)<=ct_q;
 			q(0)<='0';
+		-- ###############################################################
+
 
 			count:=0;
-			c<="0000001";
+			ctrl<="000011" after 1ns; -- activate c0 and c1
 			next_state<=scan;
 
 		WHEN sub => -- substract
@@ -58,12 +72,12 @@ BEGIN
 			ELSE 
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,NOT ct_y,'1');--sub from A value of c2's y
-			va<=a sra 1 after 100ns;
+			--va<=a sra 1 after 100ns;
 			aux_a_m(7 downto 4):=a; -- reconstruct content of A_M
 			aux_a_m(3 downto 0):=a_m(3 downto 0);
 			
 			a_m <=aux_a_m after 100ns; 	
-			c<="0101010";
+	
 
 			next_state<=test;
 			END IF;
@@ -73,12 +87,12 @@ BEGIN
 			ELSE 
 			aux_a:=a_m(7 downto 4); --content of A
 			a:=suma(aux_a,ct_y,'0');--add from A value of c2's y
-			va<=a after 100ns;
+			--va<=a after 100ns;
 			aux_a_m(7 downto 4):=a; -- reconstruct content of A_M
 			aux_a_m(3 downto 0):=a_m(3 downto 0);
 			
 			a_m <=aux_a_m after 100ns; 
-			c<="1111111";
+
 			next_state<=test;
 			END IF;
 		WHEN scan => -- decide next state
@@ -108,6 +122,7 @@ BEGIN
 			END IF;
 			
 		WHEN endstate=>
+				next_state<=init;
 		WHEN others =>
 			-- do nothing
 	END CASE;

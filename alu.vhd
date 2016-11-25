@@ -18,9 +18,9 @@ BEGIN
 	case sel_op(1) & sel_op(0) is
 		when "10"  =>
 			OUTPUT <= suma(OPERAND_A,NOT OPERAND_B,'1') after 1ns;
-		when "00" =>
+		when "01" =>
 			OUTPUT <= suma(OPERAND_A,OPERAND_B,'0') after 1ns;
-		when others =>
+		when others => -- no action
  	END CASE;
 END PROCESS;
 END behave_alu;
