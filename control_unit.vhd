@@ -43,7 +43,7 @@ BEGIN
 		current_state <= next_state;
 	END IF;
 END PROCESS clock_process;
-state_transition_process:PROCESS(current_state,q)
+state_transition_process:PROCESS(current_state,sel,q)
 	VARIABLE count :INTEGER:=0;
 	VARIABLE f:BIT;
 	VARIABLE a,aux_a,aux_q:BIT_VECTOR(3 DOWNTO 0);
@@ -96,6 +96,14 @@ BEGIN
 			next_state<=test;
 			END IF;
 		WHEN scan => -- decide next state
+		case sel(1) & sel(0) is
+			when "00"  =>
+				ctrl<="000100" after 1ns; -- activate c2 for load in A register
+			when "10" =>
+				ctrl<="000110" after 1ns; -- activez c2 for load in A and c3 for 	
+			when others => -- no action
+ 		END CASE;
+		-- ###############################################################				
 			IF q(1)='0' AND q(0)='1' THEN
 				next_state<=add;
 			ELSIF q(1)='1' AND q(0)='0' THEN
@@ -103,8 +111,10 @@ BEGIN
 			ELSE
 				next_state<=test;
 			END IF;
+		-- ###############################################################
 		WHEN test =>
 			IF count=N THEN
+				ctrl<="100000" after 1ns; -- activate c5 for output
 				next_state<=endstate;
 			ELSE
 
@@ -115,7 +125,8 @@ BEGIN
 				aux_q:= q(4 downto 1) ror 1; 
 				q(4 downto 1)<=aux_q after 110ns;
 				q(0)<=f after 110ns;
-
+				
+				ctrl<="010000" after 1ns; -- activate c6 c5 for output
 				-- increment counter
 				count:= count+1;
 				next_state<=scan;
